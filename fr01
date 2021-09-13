@@ -1,0 +1,90 @@
+#define ANSI //IEE 754 4 bajty = 32 bity   1 bit znak -> 8 bitów wykładnik 2~(wykładnik - 127 = dodatnie lub ujemne) -> 23 bity mantysa (1,mantysa) = 32 bity
+//(-1)~znak * 1,mantysa * 2~(wykladnik - 127)  BIAS = 127, notacja naukowa: 1.x.....x * 2~w np 3.14 = 1.57 * 2~1, cecha = bias(127) + wykładnik
+// float reprezentation
+//sign(1 bit) - if negative put'1'
+//exponent(8 bits) property = power + bias(127)
+//mantissa (23 bits)
+//system kodowania liczb binarnych U2 (negacja  i dodanie 1)
+
+#include <iostream>
+#include <cmath>
+
+void sign(char binary[], float x)
+{
+    if(x < 0) binary[1] ='1';
+    else binary[1] ='0';
+}
+
+void exponent(char binary[], float x, const int f_bias, float &m)
+{
+    int prop{}, power{};
+
+    x = fabs(x);
+
+   if(x < 1 && x != 0)
+   {
+       while(x <= 2){
+           x *= 2;
+           power -= 1;
+       }
+   }
+    if(x > 1)
+    {
+        while(x >= 2){
+        power += 1;
+        x /= 2;
+        }
+    }
+   // std::cout << "power: " << power << std::endl;
+    if (x >= 1) m = x-1;
+    x == 0 ? 0 : prop =  f_bias + power;
+
+    //std::cout << "prop: " << prop << std::endl;
+
+    for(unsigned int i = 10 ; i > 2 ; i--)
+    {
+        if (prop % 2 == 1) binary[i] = '1';
+        if (prop % 2 == 0) binary[i] = '0';
+        prop /= 2;
+    }
+}
+
+void mantissa(char binary[], float &m)
+{
+    for(unsigned int j = 12 ; j <= 34 ; j++)
+    {
+        m *= 2;
+        //std::cout << "m: " << m << std::endl;
+
+        if (m < 1)
+        {
+            binary[j] = '0';
+        }
+        if (m > 1)
+        {
+            binary[j] = '1';
+            m = m - 1;
+        }
+    }
+}
+
+int main()
+{
+    int k{10};
+    float x{}, m{};
+    const int f_bias{127};
+    char binary[36]{"s0e00000000m00000000000000000000000"};
+    char hexadecimal[11]{"0x00000000"};
+
+    while(k){
+         k--;
+         std::cin >> x ;
+         
+         sign(binary, x);  // ustawienie znaku liczby
+         exponent(binary, x, f_bias, m);
+         mantissa(binary, m);
+         
+         std::cout << binary << std::endl;     
+    }
+    return 0;
+}
