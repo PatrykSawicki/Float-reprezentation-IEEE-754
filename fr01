@@ -112,13 +112,10 @@ void f_hexa_spoj(const char hexadecimal[], char hexa_spoj[], int hsp_size )
              hexa_spoj[q] = 32;
              q++ ; t = 0;
         }
-        if(hexa2[p] == 48 && hexa2[p-1] == 48)
+        hexa_spoj[q] = hexa2[p];
+        if(hexa_spoj[q] == '0' && hexa_spoj[q-1] == 32)
         {
             hexa_spoj[q] = 32;
-        }
-        else
-        {
-            hexa_spoj[q] = hexa2[p];
         }
         q++; t++;
     }
