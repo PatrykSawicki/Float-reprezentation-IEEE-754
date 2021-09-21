@@ -1,6 +1,7 @@
 #define ANSI //IEE 754 4 bajty = 32 bity   1 bit znak -> 8 bitów wykładnik 2~(wykładnik - 127 = dodatnie lub ujemne) -> 23 bity mantysa (1,mantysa) = 32 bity
 //(-1)~znak * 1,mantysa * 2~(wykladnik - 127)  BIAS = 127, notacja naukowa: 1.x.....x * 2~w np 3.14 = 1.57 * 2~1, cecha = bias(127) + wykładnik
 // float reprezentation
+
 //sign(1 bit) - if negative put'1'
 //exponent(8 bits) property = power + bias(127)
 //mantissa (23 bits)
@@ -8,8 +9,16 @@
 
 #include <iostream>
 #include <cmath>
+#include <string>
+#include <cstring>
 
-void sign(char binary[], float x)
+int power(int basis, int exponent)
+{
+    if(exponent == 0)return 1;
+    else return basis * (power(basis, exponent-1));
+}
+
+void sign(char binary[1], float x)
 {
     if(x < 0) binary[1] ='1';
     else binary[1] ='0';
@@ -21,13 +30,13 @@ void exponent(char binary[], float x, const int f_bias, float &m)
 
     x = fabs(x);
 
-   if(x < 1 && x != 0)
-   {
-       while(x <= 2){
-           x *= 2;
-           power -= 1;
-       }
-   }
+    if(x < 1 && x != 0)
+    {
+        while(x <= 2){
+            x *= 2;
+            power -= 1;
+        }
+    }
     if(x > 1)
     {
         while(x >= 2){
@@ -35,11 +44,8 @@ void exponent(char binary[], float x, const int f_bias, float &m)
         x /= 2;
         }
     }
-   // std::cout << "power: " << power << std::endl;
     if (x >= 1) m = x-1;
     x == 0 ? 0 : prop =  f_bias + power;
-
-    //std::cout << "prop: " << prop << std::endl;
 
     for(unsigned int i = 10 ; i > 2 ; i--)
     {
@@ -49,22 +55,72 @@ void exponent(char binary[], float x, const int f_bias, float &m)
     }
 }
 
-void mantissa(char binary[], float &m)
+void mantissa(char binary[], int b_size, float &m)
 {
-    for(unsigned int j = 12 ; j <= 34 ; j++)
+    for(int j = 12 ; j < b_size -1 ; ++j)
     {
         m *= 2;
-        //std::cout << "m: " << m << std::endl;
 
         if (m < 1)
         {
             binary[j] = '0';
         }
-        if (m > 1)
+        if (m >= 1)
         {
             binary[j] = '1';
             m = m - 1;
         }
+    }
+}
+
+void f_hexa(const char binary[],int b_size,  char hexadecimal[])
+{
+    int temp{}, w{}, j{};
+    char binary2[32];
+
+    for(int i = 0; i < b_size -1; i++)
+    {
+        if (binary[i]=='1' || binary[i]=='0')
+        {
+            binary2[j] = binary[i];
+            j++;
+        }
+    }
+
+    for(int x = 2; x <= 9; x++)
+    {
+        temp = (binary2[0 + w] - 48) * 8 + (binary2[1 + w] - 48) * 4 + (binary2[2 + w] - 48) * 2 + binary2[3 + w] - 48;
+
+        w += 4;
+
+        hexadecimal[x] = static_cast<char>(temp + 48);
+        if(temp > 9) hexadecimal[x] = static_cast<char>(temp + 87);
+    }
+}
+
+void f_hexa_spoj(const char hexadecimal[], char hexa_spoj[], int hsp_size )
+{
+    int q{}, t{};
+    char hexa2[9]{};
+    strcpy(hexa2, hexadecimal+2);
+    std::cout <<"hexa2: " << hexa2 << std::endl;
+
+    for(int p = 0; p < 8 ; p++)
+    {
+        if(t == 2)
+        {
+             hexa_spoj[q] = 32;
+             q++ ; t = 0;
+        }
+        if(hexa2[p] == 48 && hexa2[p-1] == 48)
+        {
+            hexa_spoj[q] = 32;
+        }
+        else
+        {
+            hexa_spoj[q] = hexa2[p];
+        }
+        q++; t++;
     }
 }
 
@@ -73,18 +129,26 @@ int main()
     int k{10};
     float x{}, m{};
     const int f_bias{127};
-    char binary[36]{"s0e00000000m00000000000000000000000"};
-    char hexadecimal[11]{"0x00000000"};
+    constexpr int b_size{36}, h_size{11}, hsp_size{12};
+    char binary[b_size]{"s0e00000000m00000000000000000000000"};
+    char hexadecimal[h_size]{"0x00000000"};
+    char hexa_spoj[hsp_size]{"00"};
 
     while(k){
          k--;
+
          std::cin >> x ;
-         
+
          sign(binary, x);  // ustawienie znaku liczby
          exponent(binary, x, f_bias, m);
-         mantissa(binary, m);
-         
-         std::cout << binary << std::endl;     
+         mantissa(binary, b_size, m);
+         f_hexa(binary, b_size, hexadecimal);
+         f_hexa_spoj(hexadecimal, hexa_spoj, hsp_size);
+
+         std::cout << binary << std::endl;
+         std::cout << hexadecimal << std::endl;
+         std::cout << hexa_spoj << std::endl;
     }
     return 0;
 }
+
